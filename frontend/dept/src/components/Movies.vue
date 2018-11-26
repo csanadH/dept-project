@@ -30,17 +30,15 @@ export default {
       movieName: '',
     };
   },
-  created: function () {
+  created() {
     this.movieName = localStorage.getItem('lastSearch');
     document.getElementsByTagName('input').value = this.movieName;
     this.getMovie();
   },
   methods: {
     getMovie() {
-      let path = 'http://localhost:5000/movies/name/';
-      path += this.movieName;
       localStorage.setItem('lastSearch', this.movieName);
-      axios.get(path)
+      axios.get('http://localhost:5000/movies/name', { params: { name: this.movieName } })
         .then((res) => {
           this.msg = res.data;
         })

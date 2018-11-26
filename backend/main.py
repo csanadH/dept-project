@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import urllib, urllib.parse
 import json
@@ -13,8 +13,9 @@ app.config.from_object(__name__)
 
 CORS(app)
 
-@app.route('/movies/name/<movie>', methods=['GET'])
-def movies(movie):
+@app.route('/movies/name', methods=['GET'])
+def movies():
+    movie = request.args.get('name')
     movie = urllib.parse.quote(movie)
     search = cache.get(movie)
     if search != None:
@@ -25,8 +26,9 @@ def movies(movie):
     cache.set(movie, contents)
     return jsonify(contents)
 
-@app.route('/movies/id/<id>', methods=['GET'])
-def movie(id):
+@app.route('/movies/id', methods=['GET'])
+def movie():
+    id = request.args.get('movieId')
     search = cache.get(id)
     if search != None:
         return jsonify(search)
@@ -35,10 +37,9 @@ def movie(id):
     cache.set(id, contents)
     return jsonify(contents)
 
-@app.route('/movies/trailer/<name>', methods=['GET'])
-def trailer(name):
-    name = name + " Trailer HD"
-    name = urllib.parse.quote(name)
+@app.route('/movies/trailer', methods=['GET'])
+def trailer():
+    name = fetchTrailer(request.args)
     search = cache.get(name)
     if search != None:
         return jsonify(search)
@@ -46,6 +47,15 @@ def trailer(name):
     contents = json.loads(contents.decode('utf-8'))
     cache.set(name, contents)
     return jsonify(contents)
+
+def fetchTrailer(args):
+    title = args.get('title')
+    year = args.get('year')
+    trailer = "Trailer HD"
+    name = [title, year, trailer]
+    name = " ".join(name)
+    name = urllib.parse.quote(name)
+    return name
 
 if __name__ == '__main__':
     app.run()

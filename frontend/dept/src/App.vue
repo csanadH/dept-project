@@ -27,6 +27,7 @@ html,
 body {
     font-size: 24px;
     text-rendering: optimizeLegibility;
+    height: 100vh;
 }
 
 .row,

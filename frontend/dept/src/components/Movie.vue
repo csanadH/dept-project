@@ -1,6 +1,6 @@
 <template>
 <section class="movie section">
-    <div class="row mov">
+    <div v-if="contentLoaded === true" class="row mov">
         <span class="image">
           <img v-if="movie.Poster != 'N/A'" :src="movie.Poster" />
           <img v-if="movie.Poster == 'N/A'" src="../assets/na.jpg" />
@@ -8,7 +8,8 @@
         <span id="info">
             <table>
                 <tr>
-                    <th colSpan="4"><span id="title">{{movie.Title}}</span><br><span id="released">{{ movie.Released }}</span></th>
+                    <th colSpan="4"><span id="title">{{movie.Title}}</span><br>
+                    <span id="released">{{ movie.Released }}</span></th>
                 </tr>
                 <tr>
                     <td colSpan="2" class="key">Runtime:</td>
@@ -44,20 +45,28 @@
         </span>
         <div class="button-wrap">
             <i class="fas fa-chevron-left" v-on:click="onBack" id="back"></i>
-            <button class="btn btn-outline-primary" v-on:click="trailerClick">WATCH THE TRAILER</button>
+            <button class="btn btn-outline-primary"
+            v-on:click="showTrailer = true">WATCH THE TRAILER</button>
         </div>
     </div>
     <div v-if="showTrailer == true" id="trailer-wrap" v-on:click="showTrailer = false">
         <i class="fas fa-times" id="quit" v-on:click="showTrailer = false"></i>
-        <iframe width="60%" height="60%" align="middle" :src="trailerLink"></iframe>
+        <iframe width="60%" height="60%" align="middle" :src="trailerLink" allowfullscreen></iframe>
+    </div>
+    <div v-if="contentLoaded === false">
+        <square-grid id="squaregrid"></square-grid>
     </div>
 </section>
 </template>
 
 <script>
 import axios from 'axios';
+import { SquareGrid } from 'vue-loading-spinner';
 
 export default {
+  components: {
+    SquareGrid,
+  },
   name: 'Movie',
   data() {
     return {
@@ -66,21 +75,17 @@ export default {
       rated: false,
       showTrailer: false,
       trailerLink: '',
+      contentLoaded: false,
     };
   },
   methods: {
-      trailerClick() {
-          this.showTrailer = true;
-      },
-      onBack() {
-          this.$router.push('/');  
-      },
+    onBack() {
+      this.$router.push('/');
+    },
   },
-  created: function () {
-    let path = 'http://localhost:5000/movies/id/';
-    path += this.$route.path.split('/')[2];
-    axios.get(path)
-    .then((res) => {
+  created() {
+    axios.get('http://localhost:5000/movies/id', { params: { movieId: this.$route.path.split('/')[2] } })
+      .then((res) => {
         this.movie = res.data;
         try {
           let imdb = this.movie.Ratings[0].Value;
@@ -91,24 +96,31 @@ export default {
           meta = meta.split('/')[0];
           rotten = rotten.split('%')[0];
           this.overall = Math.floor((+imdb + +rotten + +meta) / 3);
-          this.rated = true;  
+          this.rated = true;
         } catch (error) {
+          // eslint-disable-next-line
         }
-        let url = 'http://localhost:5000/movies/trailer/';
-        url += this.movie.Title;
-        axios.get(url)
-        .then((trailer) => {
-            this.trailerLink = 'https://www.youtube.com/embed/' + trailer.data.items[0].id.videoId;
-        })
-        .catch((err) => {
-            alert(err);
-        });
-    })
-    .catch((error) => {
-        alert(error);
-    });
-  }
-}
+        axios.get('http://localhost:5000/movies/trailer', {
+          params: {
+            title: this.movie.Title,
+            year: this.movie.Year,
+          } })
+          .then((trailer) => {
+            this.trailerLink = 'https://www.youtube.com/embed/';
+            this.trailerLink += trailer.data.items[0].id.videoId;
+            this.contentLoaded = true;
+          })
+          .catch((err) => {
+            // eslint-disable-next-line
+            console.error(err);
+          });
+      })
+      .catch((error) => {
+        // eslint-disable-next-line
+        console.error(error);
+      });
+  },
+};
 </script>
 
 <style>
@@ -202,6 +214,7 @@ export default {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,.8);
+    z-index: 999;
 }
 
 #trailer-wrap iframe {
@@ -245,5 +258,9 @@ i#quit:hover {
     color: grey;
     cursor: pointer;
     transition: all 100ms ease-in-out;
+}
+
+#squaregrid {
+    transform: scale(2) translateY(400%);
 }
 </style>
