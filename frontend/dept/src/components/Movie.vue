@@ -1,21 +1,57 @@
 <template>
-    <section class="section">
-        <div class="row">
-            <div id="search">
-                <input class="form-control" Placeholder="Movie" v-model="movieName">
-                <button type="submit" class="btn btn-primary" v-on:click="getMovie">SEARCH</button>
-            </div>
-            <div id="result">
-                <div class="item" v-for="movie of msg" :key="movie.name">
-                  <img v-if="movie.Poster != 'N/A'" :src="movie.Poster" />
-                  <img v-if="movie.Poster == 'N/A'" src="../assets/na.jpg" />
-                  <div class="overlay" :id="movie.imdbID" v-on:click="movieClick($event)">
-                    <div class="text">{{movie.Title}}</div>
-                  </div>
-                </div>
-            </div>
+<section class="movie section">
+    <div class="row mov">
+        <span class="image">
+          <img v-if="movie.Poster != 'N/A'" :src="movie.Poster" />
+          <img v-if="movie.Poster == 'N/A'" src="../assets/na.jpg" />
+        </span>
+        <span id="info">
+            <table>
+                <tr>
+                    <th colSpan="4"><span id="title">{{movie.Title}}</span><br><span id="released">{{ movie.Released }}</span></th>
+                </tr>
+                <tr>
+                    <td colSpan="2" class="key">Runtime:</td>
+                    <td colSpan="2" class="value">{{ movie.Runtime }}</td>
+                </tr>
+                <tr>
+                    <td colSpan="2" class="key">Genre:</td>
+                    <td colSpan="2" class="value">{{ movie.Genre }}</td>
+                </tr>
+                <tr>
+                    <td colSpan="2" class="key">Director:</td>
+                    <td colSpan="2" class="value">{{ movie.Director }}</td>
+                </tr>
+                <tr>
+                    <td colSpan="2" class="key">Actors:</td>
+                    <td colSpan="2" class="value">{{ movie.Actors }}</td>
+                </tr>
+                <tr>
+                    <td colSpan="4" class="plot">
+                        {{ movie.Plot }}
+                    </td>
+                </tr>
+                <tr v-if="rated">
+                    <td class="rating" v-for="rating of movie.Ratings" :key="rating.Value">
+                        {{ rating.Source }}<br>{{ rating.Value }}
+                    </td>
+                    <td class="overall">
+                        Overall<br>
+                        {{ overall }}%
+                    </td>
+                </tr>
+            </table>
+        </span>
+        <div class="button-wrap">
+            <i class="fas fa-chevron-left" v-on:click="onBack" id="back"></i>
+            <button class="btn btn-outline-primary" v-on:click="trailerClick">WATCH THE TRAILER</button>
         </div>
-    </section>
+    </div>
+    <div v-if="showTrailer == true" id="trailer-wrap" v-on:click="showTrailer = false">
+        <i class="fas fa-times" id="quit" v-on:click="showTrailer = false"></i>
+        <iframe width="60%" height="60%" align="middle" :src="trailerLink"></iframe>
+    </div>
+</section>
 </template>
 
 <script>
@@ -25,127 +61,189 @@ export default {
   name: 'Movie',
   data() {
     return {
-      msg: '',
-      movieName: '',
+      movie: '',
+      overall: 0,
+      rated: false,
+      showTrailer: false,
+      trailerLink: '',
     };
   },
   methods: {
-    getMovie() {
-      let path = 'http://localhost:5000/movies/name/';
-      path += this.movieName;
-      axios.get(path)
-        .then((res) => {
-          this.msg = res.data;
-        })
-        .catch((error) => {
-          alert(error);
-        });
-    },
-    movieClick(event) {
-      let path = 'http://localhost:5000/movies/id/';
-      path += event.target.id;
-      axios.get(path)
-        .then((res) => {
-            this.msg = res.data;
-        })
-    },
+      trailerClick() {
+          this.showTrailer = true;
+      },
+      onBack() {
+          this.$router.push('/');  
+      },
   },
-};
+  created: function () {
+    let path = 'http://localhost:5000/movies/id/';
+    path += this.$route.path.split('/')[2];
+    axios.get(path)
+    .then((res) => {
+        this.movie = res.data;
+        try {
+          let imdb = this.movie.Ratings[0].Value;
+          let rotten = this.movie.Ratings[1].Value;
+          let meta = this.movie.Ratings[2].Value;
+
+          imdb = imdb.split('/')[0] * 10;
+          meta = meta.split('/')[0];
+          rotten = rotten.split('%')[0];
+          this.overall = Math.floor((+imdb + +rotten + +meta) / 3);
+          this.rated = true;  
+        } catch (error) {
+        }
+        let url = 'http://localhost:5000/movies/trailer/';
+        url += this.movie.Title;
+        axios.get(url)
+        .then((trailer) => {
+            this.trailerLink = 'https://www.youtube.com/embed/' + trailer.data.items[0].id.videoId;
+        })
+        .catch((err) => {
+            alert(err);
+        });
+    })
+    .catch((error) => {
+        alert(error);
+    });
+  }
+}
 </script>
 
 <style>
-section {
-    position: relative;
-    margin-top: 20px;
+.mov {
+    margin: 0 auto;
+    margin-top: 2%;
+    width: 80%;
+    text-align: center;
+    min-height: 400px;
+    background: rgb(0,0,0);
+    padding: 14px;
+    border-radius: 24px;
 }
 
-#search,
-#result {
-    position: relative;
+.mov span.image {
+    width: 30%
+}
+
+#info {
+    font-size: 42px;
+    margin-left: 1%;
+    width: 69%;
+}
+
+#info table {
+    min-height: 100%;
+    width: 100%;
+    color: white;
+}
+
+#info table tr {
     width: 100%;
 }
 
-#search {
-    background: rgba(0,0,0, .1);
-    display: flex;
-    padding: 3%;
-    border-radius: 120px;
+#info div {
+    text-align: left;
+    font-size: 36px;
+    min-height: 100%;
 }
 
-#search input,
-#search button {
-    display: flex;
-}
-
-#search input {
-    border-radius: 6px;
-    margin-right: 2%;
+.key, .value {
     text-align: left;
 }
 
-#result span {
-    position: relative;
+.key {
+    width: 15%;
+    font-size: 28px;
 }
 
-#result {
-    background: rgba(0,0,0, .1);
-    border-radius: 20px;
-    margin-top: 1%;
+.value {
+    width: 85%;
+    font-size: 24px;
 }
 
-.item {
-  position: relative;
-  display: inline-flex;
-  margin: 1%;
-  overflow: hidden;
-  min-height: 500px;
-  max-height: 500px;
-  width: 30%;
-  height: 25%;
-  border-radius: 16px;
-}
-.item img {
-  width: 100%;
-  -moz-transition: all 0.3s;
-  -webkit-transition: all 0.3s;
-  transition: all 0.3s;
-}
-.item:hover img {
-  -moz-transform: scale(1.05);
-  -webkit-transform: scale(1.05);
-  transform: scale(1.05);
-  filter: blur(5px);
-  cursor: pointer;
+.rating {
+    font-size: 18px;
+    width: 20%
 }
 
-.overlay {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  width: 100%;
-  opacity: 0;
-  transition: .5s ease;
-  background: rgba(0, 0, 0, .05);
-  cursor: pointer;
+.overall {
+    width: 40%;
+    font-size: 24px;
 }
 
-.item:hover .overlay {
-  opacity: 1;
+#released {
+    font-size: 32px;
 }
 
-.text {
+.plot {
+    font-size: 18px;
+    padding: 10px;
+    text-align: justify;
+    color: rgba(255, 255, 255, .75);
+    border: 1px solid rgba(255, 255, 255, .1);
+    background: rgba(255, 255, 255, .08);
+}
+
+.button-wrap {
+    border-top: 1px solid rgba(255, 255, 255, .2);
+    padding-top: 1%;
+    text-align:center;
+    width: 100%;
+    margin: 0 auto;
+    display: inline-block;
+}
+
+#trailer-wrap {
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.8);
+}
+
+#trailer-wrap iframe {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+i#back {
+    font-size: 48px;
+    float: left;
+    color: rgb(0, 110, 255);
+    padding: 0;
+    transition: all 100ms ease-in-out;
+    border: 2px solid rgb(0, 110, 255);
+    padding: 0 .65%;
+    width: 5%;
+    height: 100%;
+    border-radius: 14px;
+    padding-top: .3%;
+    padding-right: .8%;
+}
+
+i#back:hover {
     color: white;
-  font-size: 110%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
+    background: rgb(0, 110, 255);
+    transition: all 100ms ease-in-out;
+    cursor: pointer;
+}
+
+i#quit {
+    float: right;
+    margin: 1% 1% 0 0;
+    font-size: 64px;
+    color: white;
+    transition: all 100ms ease-in-out;
+}
+
+i#quit:hover {
+    color: grey;
+    cursor: pointer;
+    transition: all 100ms ease-in-out;
 }
 </style>
