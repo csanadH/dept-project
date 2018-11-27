@@ -1,5 +1,6 @@
 <template>
     <section class="section">
+        hegedus.csanad96@gmail.com<br><a href="mailto:hegedus.csanad96@gmail.com">Contact</a>
         <div class="row">
             <div id="search">
                 <input class="form-control" Placeholder="Movie" v-model="movieName">
