@@ -1,0 +1,115 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Documentation for the DEPT Backend Project",
+    "version": "1.0.0",
+    "title": "DEPT Project [Python - Flask & Vue.JS]",
+    "contact": {
+      "email": "hegedus.csanad96@gmail.com"
+    }
+  },
+  "host": "*host*",
+  "basePath": "/movies",
+  "paths": {
+    "/name": {
+      "get": {
+        "summary": "Returns a list of movies by movie name",
+        "tags": [
+          "movies"
+        ],
+        "consumes": [
+          "query"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "Movie's name"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/id": {
+      "get": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Returns a movie by IMDB ID",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "Movie's IMDB ID"
+          }
+        ],
+        "consumes": [
+          "query"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/trailer": {
+      "get": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Returns a trailer by movie name and release date",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "title",
+            "description": "Movie's Title",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "description": "Movie's Release Date",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "consumes": [
+          "query"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    }
+  }
+}

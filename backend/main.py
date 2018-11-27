@@ -1,9 +1,13 @@
+import json
+import urllib
+import urllib.parse
+
+import requests
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import urllib, urllib.parse
-import json
-import requests
 from werkzeug.contrib.cache import SimpleCache
+
 cache = SimpleCache()
 
 DEBUG = True
@@ -13,7 +17,7 @@ app.config.from_object(__name__)
 
 CORS(app)
 
-omdbapi = 'http://www.omdbapi.com/'
+omdbapi = 'http://www.omdbapi.com/?apikey=101cdcd1'
 ytapi = "https://www.googleapis.com/youtube/v3/search?key=AIzaSyB_Wp8ZT8yb-qtouEc9lwOAur3Lx6meRmw&"
 
 @app.route('/movies/name', methods=['GET'])
@@ -23,7 +27,7 @@ def movies():
     search = cache.get(movie)
     if search != None:
         return jsonify(search)
-    contents = urllib.request.urlopen(omdbapi + "?s=" + movie + "&apikey=101cdcd1").read()
+    contents = urllib.request.urlopen(omdbapi + "&s=" + movie).read()
     contents = json.loads(contents.decode('utf-8'))
     contents = contents['Search']
     cache.set(movie, contents)
@@ -35,7 +39,7 @@ def movie():
     search = cache.get(id)
     if search != None:
         return jsonify(search)
-    contents = urllib.request.urlopen(omdbapi + "?i=" + id + "&apikey=101cdcd1&plot=full").read()
+    contents = urllib.request.urlopen(omdbapi + "&i=" + id).read()
     contents = json.loads(contents.decode('utf-8'))
     cache.set(id, contents)
     return jsonify(contents)
