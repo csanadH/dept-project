@@ -47,7 +47,16 @@
             <i class="fas fa-chevron-left" v-on:click="onBack" id="back"></i>
             <button class="btn btn-outline-primary"
             v-on:click="showTrailer = true">WATCH THE TRAILER</button>
-        </div>
+            <social-sharing :url="trailerLink"
+                :title="movie.Title"
+                :description="movie.Released"
+                :quote="movie.Plot"
+                :hashtags="movie.Actors"
+                v-cloak inline-template>
+            <network network="facebook">
+                <i class="fab fa-facebook-square" id="fb-share"></i>
+            </network>
+            </social-sharing>
     </div>
     <div v-if="showTrailer == true" id="trailer-wrap" v-on:click="showTrailer = false">
         <i class="fas fa-times" id="quit" v-on:click="showTrailer = false"></i>
@@ -56,6 +65,7 @@
     <div v-if="contentLoaded === false">
         <square-grid id="squaregrid"></square-grid>
     </div>
+    </div>
 </section>
 </template>
 
@@ -63,9 +73,12 @@
 import axios from 'axios';
 import { SquareGrid } from 'vue-loading-spinner';
 
+const SocialSharing = require('vue-social-sharing');
+
 export default {
   components: {
     SquareGrid,
+    SocialSharing,
   },
   name: 'Movie',
   data() {
@@ -210,7 +223,7 @@ export default {
 #trailer-wrap {
     top: 0;
     left: 0;
-    position: absolute;
+    position: fixed;
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,.8);
@@ -262,5 +275,18 @@ i#quit:hover {
 
 #squaregrid {
     transform: scale(2) translateY(400%);
+}
+
+i#fb-share {
+    font-size: 58px;
+    float: right;
+    color: rgb(0, 110, 255);
+    transition: all 100ms ease-in-out;
+}
+
+i#fb-share:hover {
+    color: white;
+    transition: all 100ms ease-in-out;
+    cursor: pointer;
 }
 </style>

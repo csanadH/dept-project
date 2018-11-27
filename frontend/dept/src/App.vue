@@ -8,7 +8,12 @@
 </template>
 
 <script>
+const SocialSharing = require('vue-social-sharing');
+
 export default {
+  components: {
+    SocialSharing,
+  },
   name: 'App',
 };
 </script>
