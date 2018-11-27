@@ -33,12 +33,14 @@ export default {
   created() {
     this.movieName = localStorage.getItem('lastSearch');
     document.getElementsByTagName('input').value = this.movieName;
-    this.getMovie();
+    if (this.movieName !== '') {
+      this.getMovie();
+    }
   },
   methods: {
     getMovie() {
       localStorage.setItem('lastSearch', this.movieName);
-      axios.get('http://localhost:5000/movies/name', { params: { name: this.movieName } })
+      axios.get('/api/name', { params: { name: this.movieName } })
         .then((res) => {
           this.msg = res.data;
         })
@@ -104,12 +106,14 @@ section {
   height: 25%;
   border-radius: 16px;
 }
+
 .item img {
   width: 100%;
   -moz-transition: all 0.3s;
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
 }
+
 .item:hover img {
   -moz-transform: scale(1.05);
   -webkit-transform: scale(1.05);

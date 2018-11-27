@@ -91,47 +91,59 @@ export default {
       contentLoaded: false,
     };
   },
-  methods: {
-    onBack() {
-      this.$router.push('/');
-    },
-  },
   created() {
-    axios.get('http://localhost:5000/movies/id', { params: { movieId: this.$route.path.split('/')[2] } })
+    axios.get('/api/id', { params: { movieId: this.fetchID() } })
       .then((res) => {
         this.movie = res.data;
         try {
-          let imdb = this.movie.Ratings[0].Value;
-          let rotten = this.movie.Ratings[1].Value;
-          let meta = this.movie.Ratings[2].Value;
-
-          imdb = imdb.split('/')[0] * 10;
-          meta = meta.split('/')[0];
-          rotten = rotten.split('%')[0];
-          this.overall = Math.floor((+imdb + +rotten + +meta) / 3);
-          this.rated = true;
+          this.setupRatings();
         } catch (error) {
           // eslint-disable-next-line
         }
-        axios.get('http://localhost:5000/movies/trailer', {
-          params: {
-            title: this.movie.Title,
-            year: this.movie.Year,
-          } })
-          .then((trailer) => {
-            this.trailerLink = 'https://www.youtube.com/embed/';
-            this.trailerLink += trailer.data.items[0].id.videoId;
-            this.contentLoaded = true;
-          })
-          .catch((err) => {
-            // eslint-disable-next-line
-            console.error(err);
-          });
+        this.fetchTrailer();
       })
       .catch((error) => {
         // eslint-disable-next-line
         console.error(error);
       });
+  },
+  methods: {
+    onBack() {
+      this.$router.push('/');
+    },
+
+    fetchID() {
+      return this.$route.path.split('/')[2];
+    },
+
+    setupRatings() {
+      let imdb = this.movie.Ratings[0].Value;
+      let rotten = this.movie.Ratings[1].Value;
+      let meta = this.movie.Ratings[2].Value;
+
+      imdb = imdb.split('/')[0] * 10;
+      meta = meta.split('/')[0];
+      rotten = rotten.split('%')[0];
+      this.overall = Math.floor((+imdb + +rotten + +meta) / 3);
+      this.rated = true;
+    },
+
+    fetchTrailer() {
+      axios.get('/api/trailer', {
+        params: {
+          title: this.movie.Title,
+          year: this.movie.Year,
+        } })
+        .then((trailer) => {
+          this.trailerLink = 'https://www.youtube.com/embed/';
+          this.trailerLink += trailer.data.items[0].id.videoId;
+          this.contentLoaded = true;
+        })
+        .catch((err) => {
+          // eslint-disable-next-line
+          console.error(err);
+        });
+    },
   },
 };
 </script>
