@@ -17,8 +17,8 @@ app.config.from_object(__name__)
 
 CORS(app)
 
-omdbapi = 'http://www.omdbapi.com/?apikey=101cdcd1'
-ytapi = "https://www.googleapis.com/youtube/v3/search?key=AIzaSyB_Wp8ZT8yb-qtouEc9lwOAur3Lx6meRmw&"
+omdbapi = 'http://www.omdbapi.com/?apikey='
+ytapi = "https://www.googleapis.com/youtube/v3/search?key="
 
 @app.route('/movies/name', methods=['GET'])
 def movies():
